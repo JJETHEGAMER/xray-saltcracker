@@ -1,3 +1,5 @@
+![saltcracker-banner](https://github.com/user-attachments/assets/5cf5a0e2-171a-4fe0-9864-19255353cf07)
+
 # ENGLISH
 
 # XRay Salt Cracker Mod
