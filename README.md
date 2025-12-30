@@ -1,10 +1,10 @@
-# 🇬🇧 ENGLISH
+# ENGLISH
 
 # XRay Salt Cracker Mod
 
 An advanced Minecraft Fabric mod that reverse-engineers server salts to **predict all structures and ores**.
 
-> **Note for LiquidLauncher / 1.21.11 Users:** This version includes special compatibility fixes (Direct Input & Safe Rendering) to work with custom clients like LiquidBounce on Minecraft 1.21.11.
+> **Note for LiquidLauncher / 1.21.11 aka 1.21.8 Users:** This version includes special compatibility fixes (Direct Input & Safe Rendering) to work with custom clients like LiquidBounce on Minecraft 1.21.11.
 
 ## ⚠️ WARNING
 
@@ -274,8 +274,7 @@ MIT License - Use at your own risk.
 
 **Happy Cracking! 💎⛏️**
 
-
-
+---
 
 
 # DEUTSCH
@@ -283,6 +282,8 @@ MIT License - Use at your own risk.
 # XRay Salt Cracker Mod
 
 Eine fortgeschrittene Minecraft Fabric-Mod, die Server-Salts crackt und **alle Strukturen und Erze vorhersagt**.
+
+> **Hinweis für LiquidLauncher / 1.21.11 aka 1.21.8 Benutzer:** Diese Version enthält spezielle Kompatibilitätskorrekturen (Direct Input & Safe Rendering), um die Verwendung mit benutzerdefinierten Clients wie LiquidBounce unter Minecraft 1.21.11 zu ermöglichen.
 
 ## ⚠️ WARNUNG
 
