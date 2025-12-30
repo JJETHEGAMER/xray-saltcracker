@@ -1,0 +1,23 @@
+# Gradle Dateien
+.gradle/
+.vscode/
+build/
+
+# IDE Dateien (IntelliJ / Eclipse / VSCode)
+.idea/
+*.iml
+.vscode/
+.settings/
+bin/
+
+# Minecraft Laufzeit-Dateien
+run/
+run*/
+logs/
+debug/
+
+# Deine Mod-spezifischen Daten (die sollen nicht veröffentlicht werden)
+config/
+exports/
+*.hprof
+*.log
