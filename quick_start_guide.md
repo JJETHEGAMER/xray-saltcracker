@@ -1,9 +1,9 @@
-# 🚀 Quick Start Guide - XRay Salt Cracker
+# 🚀 Quick Start Guide DEUTSCH - XRay Salt Cracker
 
 ## 📋 Checkliste vor dem Start
 
 - [ ] Fabric Loader installiert
-- [ ] Java 17+ installiert
+- [ ] Java 21+ installiert
 - [ ] World Seed bekannt
 - [ ] Mindestens 5 Buried Treasures gefunden
 
