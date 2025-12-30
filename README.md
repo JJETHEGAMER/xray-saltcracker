@@ -272,7 +272,7 @@ MIT License - Use at your own risk.
 
 ---
 
-**Happy Cracking! 💎⛏️**
+**Happy Cracking! 💎⛏️ | A german product, created with people and ai. **
 
 ---
 
@@ -599,4 +599,4 @@ Basiert auf dem **SASSA-Algorithmus** (Salt Search Algorithm) und Minecraft's Op
 
 ---
 
-**Viel Erfolg beim Cracken! 💎⛏️**
+**Viel Erfolg beim Cracken! 💎⛏️ | Ein deutsches Produkt, erstellt mit Menschen und KI. **
