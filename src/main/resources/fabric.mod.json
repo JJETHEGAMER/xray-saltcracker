@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "xray_saltcracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "XRay Salt Cracker",
   "description": "Advanced XRay mod that cracks server salts to predict all structures and ores",
   "authors": [

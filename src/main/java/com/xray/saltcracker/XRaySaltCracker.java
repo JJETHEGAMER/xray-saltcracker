@@ -2,153 +2,118 @@ package com.xray.saltcracker;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.lang.reflect.Constructor;
 
-/**
- * XRay Salt Cracker Mod
- * Version: Ultra-Safe Mode (Direct LWJGL Input)
- */
 public class XRaySaltCracker implements ClientModInitializer {
+    
     public static final String MOD_ID = "xray_saltcracker";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     
     private static XRaySaltCracker instance;
+    private boolean wasInsertPressed = false;
     
-    // Komponenten
     private DataCollector dataCollector;
     private SaltSolver saltSolver;
     private PredictionEngine predictionEngine;
-    private ESPRenderer espRenderer;
     private ConfigManager configManager;
+    private ESPRenderer espRenderer; // WICHTIG: Darf nicht fehlen!
     
-    // GUI
-    private XRayGui gui;
-    
-    // Status
-    private boolean wasOpenKeyPressed = false;
-    private boolean modEnabled = false;
+    private boolean enabled = true;
     private long worldSeed = 0;
     private Long structureSalt = null;
     private Long oreSalt = null;
-    
+
     @Override
     public void onInitializeClient() {
         instance = this;
-        LOGGER.info("Initialisiere XRay Salt Cracker (Ultra Safe Mode)...");
+        LOGGER.info("XRay Salt Cracker: Initializing CHAT-FEEDBACK Mode...");
         
-        // 1. Komponenten
-        predictionEngine = new PredictionEngine();
-        espRenderer = new ESPRenderer();
-        dataCollector = new DataCollector();
-        saltSolver = new SaltSolver();
-        
-        // 2. Config
-        configManager = new ConfigManager();
-        
-        // 3. GUI
-        gui = new XRayGui();
-        
-        // Wir versuchen, ein KeyBinding zu registrieren, damit es sauber aussieht.
-        // Wenn das fehlschlägt (wie im Log gesehen), ist es egal, da wir unten den Direct-Check haben.
-        registerDummyKeyBinding();
-        
-        // Event-Handler
-        registerEvents();
-        
-        LOGGER.info("XRay Salt Cracker bereit! Druecke EINFG (Insert) fuer das Menü.");
-    }
-    
-    private void registerDummyKeyBinding() {
         try {
-            KeyBinding tempKey = createSafeKeyBinding(
-                "key.xray_saltcracker.open_gui",
-                GLFW.GLFW_KEY_INSERT,
-                "category.xray_saltcracker"
-            );
-            if (tempKey != null) {
-                KeyBindingHelper.registerKeyBinding(tempKey);
-            }
+            this.predictionEngine = new PredictionEngine();
+            this.dataCollector = new DataCollector();
+            this.saltSolver = new SaltSolver();
+            
+            // WICHTIG: Wir müssen den Renderer laden, auch wenn er nichts zeichnet!
+            // Sonst stürzt der ConfigManager ab (NullPointerException).
+            this.espRenderer = new ESPRenderer(); 
+            
+            this.configManager = new ConfigManager();
+            LOGGER.info("Systeme erfolgreich geladen.");
         } catch (Exception e) {
-            // Ignorieren, ist nur Kosmetik
+            LOGGER.error("Fehler beim Laden der Systeme:", e);
         }
-    }
-
-    private KeyBinding createSafeKeyBinding(String name, int code, String category) {
-        try {
-            Constructor<KeyBinding> c4 = KeyBinding.class.getConstructor(String.class, InputUtil.Type.class, int.class, String.class);
-            return c4.newInstance(name, InputUtil.Type.KEYSYM, code, category);
-        } catch (Exception e1) {
-            try {
-                Constructor<KeyBinding> c3 = KeyBinding.class.getConstructor(String.class, int.class, String.class);
-                return c3.newInstance(name, code, category);
-            } catch (Exception e2) {
-                return null;
-            }
-        }
-    }
-    
-    private void registerEvents() {
-        // Client-Tick
+        
+        // --- Input Loop (EINFG Taste) ---
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.getWindow() == null) return;
             
             long handle = client.getWindow().getHandle();
+            int keyState = GLFW.glfwGetKey(handle, GLFW.GLFW_KEY_INSERT);
+            boolean isPressed = (keyState == GLFW.GLFW_PRESS);
             
-            // --- FIX: ULTRA DIRECT INPUT ---
-            // Wir nutzen nicht InputUtil (Minecraft), sondern GLFW direkt (Grafik-Bibliothek).
-            // Das kann nicht crashen, solange das Fenster existiert.
-            int state = GLFW.glfwGetKey(handle, GLFW.GLFW_KEY_INSERT);
-            boolean isPressed = (state == GLFW.GLFW_PRESS);
-            
-            if (isPressed && !wasOpenKeyPressed) {
-                if (client.currentScreen == null) {
-                    client.setScreen(gui);
-                } else if (client.currentScreen == gui) {
-                    client.setScreen(null);
+            if (isPressed && !wasInsertPressed) {
+                // 1. Menü öffnen
+                if (client.currentScreen == null || client.currentScreen instanceof XRayGui) {
+                    client.execute(() -> client.setScreen(new XRayGui()));
+                }
+                
+                // 2. Status in den Chat schreiben
+                if (client.player != null) {
+                    String status = "Idle";
+                    if (saltSolver.isSolving()) status = "Cracking... " + (int)(saltSolver.getProgress() * 100) + "%";
+                    else if (structureSalt != null) status = "§aSALT FOUND: " + structureSalt;
+                    
+                    int chests = (dataCollector != null) ? dataCollector.getDataCount("structure_buried_treasure") : 0;
+                    
+                    String msg = "§6[XRay] §fStatus: " + status + " §7| §fTreasures: §e" + chests;
+                    client.player.sendMessage(Text.of(msg), false);
                 }
             }
-            
-            wasOpenKeyPressed = isPressed;
+            wasInsertPressed = isPressed;
         });
         
-        // Rendering ist weiterhin auskommentiert, um Crashs zu vermeiden
+        LOGGER.info("Initialisierung fertig.");
     }
     
-    // --- Getter & Setter ---
     public static XRaySaltCracker getInstance() { return instance; }
+    
+    public void execute(Runnable task) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null) client.execute(task);
+    }
+    
+    // --- Getters & Setters ---
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    
+    public long getWorldSeed() { return worldSeed; }
+    public void setWorldSeed(long worldSeed) {
+        this.worldSeed = worldSeed;
+        if (predictionEngine != null) predictionEngine.updateWorldSeed(worldSeed);
+    }
+
+    public Long getStructureSalt() { return structureSalt; }
+    public void setStructureSalt(Long structureSalt) {
+        this.structureSalt = structureSalt;
+        if (predictionEngine != null) predictionEngine.updateStructureSalt(structureSalt);
+    }
+
+    public Long getOreSalt() { return oreSalt; }
+    public void setOreSalt(Long oreSalt) {
+        this.oreSalt = oreSalt;
+        if (predictionEngine != null) predictionEngine.updateOreSalt(oreSalt);
+    }
+    
     public DataCollector getDataCollector() { return dataCollector; }
     public SaltSolver getSaltSolver() { return saltSolver; }
     public PredictionEngine getPredictionEngine() { return predictionEngine; }
-    public ESPRenderer getESPRenderer() { return espRenderer; }
+    
+    // WICHTIG: Muss den echten (Dummy) Renderer zurückgeben, NICHT null!
+    public ESPRenderer getESPRenderer() { return espRenderer; } 
+    
     public ConfigManager getConfigManager() { return configManager; }
-    
-    public void setEnabled(boolean enabled) {
-        this.modEnabled = enabled;
-        LOGGER.info("Mod " + (enabled ? "aktiviert" : "deaktiviert"));
-    }
-    public boolean isEnabled() { return modEnabled; }
-    
-    public void setWorldSeed(long seed) {
-        this.worldSeed = seed;
-        LOGGER.info("World Seed gesetzt: " + seed);
-    }
-    public long getWorldSeed() { return worldSeed; }
-    
-    public void setStructureSalt(Long salt) {
-        this.structureSalt = salt;
-        if (salt != null && predictionEngine != null) predictionEngine.updateStructureSalt(salt);
-    }
-    public Long getStructureSalt() { return structureSalt; }
-    
-    public void setOreSalt(Long salt) {
-        this.oreSalt = salt;
-        if (salt != null && predictionEngine != null) predictionEngine.updateOreSalt(salt);
-    }
-    public Long getOreSalt() { return oreSalt; }
 }

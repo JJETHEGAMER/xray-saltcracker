@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Utility Hub: Seeds, Salts & Clients</title>
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --card-bg: #121216;
+            --accent: #00ffa3;
+            --accent-glow: rgba(0, 255, 163, 0.4);
+            --text-main: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border-color: #27272a;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Modern Header --- */
+        header {
+            position: relative;
+            padding: 6rem 1rem 4rem 1rem;
+            text-align: center;
+            background-color: #050505;
+            /* Modern Grid Background */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Glow effect behind title */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            filter: blur(150px);
+            opacity: 0.15;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--accent);
+            font-size: 1.25rem;
+            margin-top: 0;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        /* --- Language Switcher (Modern Pill Style) --- */
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px;
+            display: flex;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+        }
+
+        .lang-btn.active {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        section {
+            margin-bottom: 5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .section-line {
+            height: 1px;
+            background: var(--border-color);
+            flex-grow: 1;
+            margin-left: 1.5rem;
+        }
+
+        /* --- Cards --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag.mod { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .tag.tool { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+        .tag.web { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .tag.client { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.8rem 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn:hover {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        /* --- Info Box --- */
+        .info-box {
+            background: linear-gradient(180deg, rgba(0, 255, 163, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+            border: 1px solid rgba(0, 255, 163, 0.2);
+            padding: 2rem;
+            border-radius: 16px;
+        }
+
+        .info-box h3 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .container { padding: 2rem 1rem; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .section-line { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="lang-switch">
+        <button class="lang-btn active" onclick="setLanguage('de')" id="btn-de">DE</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+    </div>
+    <div class="header-content">
+        <h1 data-lang="title">MC Utility & Seed Hub</h1>
+        <p class="subtitle" data-lang="subtitle">Advanced Minecraft Resources</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Grundlagen -->
+    <section>
+        <div class="section-header">
+            <h2 data-lang="basics_title">Wissen & Technik</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="info-box">
+            <h3 data-lang="salts_title">Seeds vs. Salts</h3>
+            <p data-lang="seeds_desc"><strong>Seeds:</strong> Der numerische Hauptschlüssel (Startwert) für den Weltgenerator. Er definiert Biome, Terrain und Spawn-Punkte.</p>
+            <p data-lang="salts_desc"><strong>Salts:</strong> Interne Zusatzwerte, die Minecraft nutzt, um bestimmte Generierungen (z.B. Dorf-Positionen oder Kisten-Inhalte) vom Haupt-Seed abzukoppeln. Wenn du "Salt"-Werte kennst, kannst du Teile einer Welt vorhersagen, ohne den kompletten Seed zu haben.</p>
+        </div>
+    </section>
+
+    <!-- Seed Finding -->
+    <section>
+        <div class="section-header">
+            <h2 data-lang="cracking_title">Seed Cracking</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <span class="tag mod">Fabric Mod</span>
+                    <h3>SeedCrack</h3>
+                    <p data-lang="seedcrack_desc">Eine In-Game Mod, die automatisch Strukturen (Dungeons, Bäume, End Pillars) scannt, um den Server-Seed zu rekonstruieren.</p>
+                </div>
+                <a href="https://seedcrack.com/" target="_blank" class="btn" data-lang="btn_visit">Webseite öffnen</a>
+            </div>
+            <div class="card">
+                <div>
+                    <span class="tag tool">C++ CLI Tool</span>
+                    <h3>fnseedc</h3>
+                    <p data-lang="fnseedc_desc">Ein hochperformantes Kommandozeilen-Tool (Library), um Seeds extrem schnell extern zu berechnen. Kein Mod für den Mods-Ordner!</p>
+                </div>
+                <a href="https://github.com/SeedFinding/fnseedc" target="_blank" class="btn" data-lang="btn_repo">GitHub Repository</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clients -->
+    <section>
+        <div class="section-header">
+            <h2 data-lang="clients_title">Utility Clients</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <span class="tag client">Utility Mod</span>
+                    <h3>Meteor Client</h3>
+                    <p data-lang="meteor_desc">Umfangreicher Utility Client für Fabric. Enthält Module für Combat, Render (X-Ray) und World-Exploits.</p>
+                </div>
+                <a href="https://meteorclient.com/" target="_blank" class="btn" data-lang="btn_download">Download</a>
+            </div>
+            <div class="card">
+                <div>
+                    <span class="tag mod">Addon Mod</span>
+                    <h3>Meteor Rejects</h3>
+                    <p data-lang="rejects_desc">Addon-Sammlung für den Meteor Client. Fügt Features hinzu, die im offiziellen Client entfernt oder abgelehnt wurden.</p>
+                </div>
+                <a href="https://github.com/AntiCope/meteor-rejects/releases" target="_blank" class="btn" data-lang="btn_releases">GitHub Releases</a>
+            </div>
+            <div class="card">
+                <div>
+                    <span class="tag client">Hacked Client</span>
+                    <h3>LiquidBounce</h3>
+                    <p data-lang="liquid_desc">Bekannter Client (besonders für PvP & Legacy Versionen 1.8/1.12), unterstützt aber durch "Next" auch moderne Versionen.</p>
+                </div>
+                <a href="https://liquidbounce.net/" target="_blank" class="btn" data-lang="btn_visit">Webseite öffnen</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools -->
+    <section>
+        <div class="section-header">
+            <h2 data-lang="tools_title">Tools & Spoofing</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div>
+                    <span class="tag mod">Fabric Mod</span>
+                    <h3>ClientSpoofer</h3>
+                    <p data-lang="spoofer_desc">Kleine Mod, die dem Server vorgaukelt, du würdest Vanilla Minecraft nutzen (versteckt Mod-Namen im Handshake).</p>
+                </div>
+                <a href="https://modrinth.com/mod/clientspoofer" target="_blank" class="btn">Modrinth Page</a>
+            </div>
+            <div class="card">
+                <div>
+                    <span class="tag web">Webseite</span>
+                    <h3>MCUUID.net</h3>
+                    <p data-lang="uuid_desc">Online-Tool zum Nachschlagen von UUIDs, Namensänderungen und Skin-History. Keine Installation nötig.</p>
+                </div>
+                <a href="https://mcuuid.net/" target="_blank" class="btn">Webseite öffnen</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p data-lang="footer_text">&copy; 2024 MC Utility Hub. Nutzung auf eigene Gefahr.</p>
+</footer>
+
+<script>
+    const translations = {
+        de: {
+            title: "MC Utility & Seed Hub",
+            subtitle: "Advanced Minecraft Resources",
+            basics_title: "Wissen & Technik",
+            salts_title: "Seeds vs. Salts",
+            seeds_desc: "<strong>Seeds:</strong> Der numerische Hauptschlüssel (Startwert) für den Weltgenerator. Er definiert Biome, Terrain und Spawn-Punkte.",
+            salts_desc: "<strong>Salts:</strong> Interne Zusatzwerte, die Minecraft nutzt, um bestimmte Generierungen (z.B. Dorf-Positionen oder Kisten-Inhalte) vom Haupt-Seed abzukoppeln. Wenn du \"Salt\"-Werte kennst, kannst du Teile einer Welt vorhersagen, ohne den kompletten Seed zu haben.",
+            cracking_title: "Seed Cracking",
+            seedcrack_desc: "Eine In-Game Mod, die automatisch Strukturen (Dungeons, Bäume, End Pillars) scannt, um den Server-Seed zu rekonstruieren.",
+            fnseedc_desc: "Ein hochperformantes Kommandozeilen-Tool (Library), um Seeds extrem schnell extern zu berechnen. Kein Mod für den Mods-Ordner!",
+            clients_title: "Utility Clients",
+            meteor_desc: "Umfangreicher Utility Client für Fabric. Enthält Module für Combat, Render (X-Ray) und World-Exploits.",
+            rejects_desc: "Addon-Sammlung für den Meteor Client. Fügt Features hinzu, die im offiziellen Client entfernt oder abgelehnt wurden.",
+            liquid_desc: "Bekannter Client (besonders für PvP & Legacy Versionen 1.8/1.12), unterstützt aber durch \"Next\" auch moderne Versionen.",
+            tools_title: "Tools & Spoofing",
+            spoofer_desc: "Kleine Mod, die dem Server vorgaukelt, du würdest Vanilla Minecraft nutzen (versteckt Mod-Namen im Handshake).",
+            uuid_desc: "Online-Tool zum Nachschlagen von UUIDs, Namensänderungen und Skin-History. Keine Installation nötig.",
+            btn_visit: "Webseite öffnen",
+            btn_repo: "GitHub Repository",
+            btn_download: "Download",
+            btn_releases: "GitHub Releases",
+            footer_text: "&copy; 2024 MC Utility Hub. Nutzung auf eigene Gefahr."
+        },
+        en: {
+            title: "MC Utility & Seed Hub",
+            subtitle: "Advanced Minecraft Resources",
+            basics_title: "Knowledge & Tech",
+            salts_title: "Seeds vs. Salts",
+            seeds_desc: "<strong>Seeds:</strong> The main numeric key (start value) for the world generator. It defines biomes, terrain, and spawn points.",
+            salts_desc: "<strong>Salts:</strong> Internal additional values Minecraft uses to decouple certain generations (e.g., village positions or chest loot) from the main seed. Knowing salt values helps predict world features without the full seed.",
+            cracking_title: "Seed Cracking",
+            seedcrack_desc: "An in-game mod that automatically scans structures (dungeons, trees, end pillars) to reconstruct the server seed.",
+            fnseedc_desc: "A high-performance command-line tool (library) to calculate seeds externally extremely fast. Not a drag-and-drop mod!",
+            clients_title: "Utility Clients",
+            meteor_desc: "Comprehensive Utility Client for Fabric. Includes modules for Combat, Render (X-Ray), and World Exploits.",
+            rejects_desc: "Addon collection for Meteor Client. Adds features that were removed or rejected from the official client.",
+            liquid_desc: "Well-known client (especially for PvP & legacy versions 1.8/1.12), but also supports modern versions via 'Next'.",
+            tools_title: "Tools & Spoofing",
+            spoofer_desc: "Small mod that tricks the server into thinking you are using Vanilla Minecraft (hides mod brand in handshake).",
+            uuid_desc: "Online tool to look up UUIDs, name changes, and skin history. No installation required.",
+            btn_visit: "Open Website",
+            btn_repo: "GitHub Repository",
+            btn_download: "Download",
+            btn_releases: "GitHub Releases",
+            footer_text: "&copy; 2024 MC Utility Hub. Use at your own risk."
+        }
+    };
+
+    function setLanguage(lang) {
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if(translations[lang][key]) {
+                el.innerHTML = translations[lang][key];
+            }
+        });
+
+        document.getElementById('btn-de').classList.toggle('active', lang === 'de');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+        localStorage.setItem('preferred-lang', lang);
+    }
+
+    const storedLang = localStorage.getItem('preferred-lang') || 'de';
+    setLanguage(storedLang);
+
+</script>
+
+</body>
+</html>
